@@ -1,0 +1,9 @@
+/*
+ *= require codemirror
+ *= require_self
+*/
+
+.CodeMirror {
+  height: 600px;
+  font-size: 16px;
+}

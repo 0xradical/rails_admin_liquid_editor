@@ -1,0 +1,43 @@
+:ruby
+  js_data = {
+    :csspath   => field.codemirror_css_location,
+    :jspath    => field.codemirror_js_location,
+    :options   => field.codemirror_config,
+    :locations => field.codemirror_assets
+  }
+
+= form.text_area field.method_name, field.html_attributes.reverse_merge(:data => { :richtext => 'codemirror', :options => js_data.to_json }).reverse_merge((hdv = field.html_default_value).nil? ? { :value => field.formatted_value } : { :value => hdv })
+
+- if !RailsAdmin::Config::Actions.find(:liquid_previewer)
+  %a{:class => 'btn btn-info btn-liquid-previewer', :'data-target' => "##{form.dom_id(field)}_modal", :'data-remote' => 'liquid_preview', :'data-field' => "##{form.dom_id(field)}" }
+    Preview
+
+.modal.hide.fade{:tabindex => '-1', :role => 'dialog', :id => "#{form.dom_id(field)}_modal"}
+  .modal-header
+    %button.close{:type => 'button', :'data-dismiss' => 'modal'}×
+    %h3#modal-label Liquid Previewer
+  .modal-body
+    %p Loading ...
+  .modal-footer
+    %button.btn{:'data-dismiss' => 'modal'} Close
+
+:javascript
+  $('.btn-liquid-previewer').each(function(){
+    var that = this;
+
+    $($(that).data('target')).modal({
+      show: false
+    });
+
+    $(that).on('click',function(event){
+      $($(that).data('target')).modal('show');
+      $.ajax({
+        url: $(that).data('remote'),
+        data: {liquid: $($(that).data('field')).siblings('.CodeMirror')[0].CodeMirror.doc.getValue()},
+        success: function(data){
+          $($(that).data('target')).find('.modal-body').html(data);
+        }
+      });
+      return false;
+    });
+  });
